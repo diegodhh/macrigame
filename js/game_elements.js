@@ -1,92 +1,73 @@
+import {ElementStyle, WeaponStyle,BulletStyle} from "./element_style.js";
+
 export class Element {
-    constructor(p, father) {
-        
-        this._parent = father;
-        this._element = null;
+    constructor(p) {              
+        this.DrawingStyle = ElementStyle;
         this._position = {x:p.x, y:p.y}; 
-        this._size= {width: 200}
-        this._setDomElement();
-        this._styleElement(); 
-        this._updateElement();
+        this._size = {width: 150}       
         }
         set size(width) {
             this._size.width = width;
+        }
+        get size() {
+            return this._size;
         }
         get position() {
             return this._position;
         }
         set position(obj) {
-            this._position= obj;
-            this._updateElement(); 
+            this._position= obj;             
         }
-        _updateElement() {
-            this._element.style.top = this._position.y + "px";
-            this._element.style.left = this._position.x + "px";
+        action(userEvents) {
+            
+            userEvents.actionQueue.forEach(element => {
+                this[element](userEvents);
+            });
+            return this;
+            
+        } 
+        click(userEvents) {
+            console.log("click");
+            
         }
-        _styleElement() {
-            this._element.style.position= "absolute";    
-            this._element.style.width = this._size.width + "px";
-            this._element.style.transform = "scaleX(-1)";
-        }
-        _setDomElement() {
-            this._element = document.createElement('img');
-            this._element.setAttribute("src", "img/element.png");
-            this._parent.appendChild(this._element);            
-        }
-       
-      }
+        mousemove(userEvents) {
+            
+            this._position = userEvents.mousePosition;
+            userEvents.emptyActionQueue();
+            console.log("mouve" + this._position.x);
+        }       
+        
+}
 
 
 
-export class Gun extends Element {
-    constructor(p, father) {
-        super(p,father)
+export class Weapon extends Element {
+    constructor(p) {
+        super(p)
+        this.DrawingStyle = WeaponStyle;
     }
-    _setDomElement() {
-        this._element = document.createElement('img');
-        this._element.setAttribute("src", "img/gun.png");
-        this._parent.appendChild(this._element);            
-    }
-    _styleElement() {
-        this._element.style.position= "absolute";    
-        this._element.style.width = this._size.width + "px";
-        this._element.style.transform = "scaleX(-1)";
-        this._element.style.zIndex="100";
-    }
-    
-    fire() {
+   
+    fire(userEvents,gameState) {
         this.currentBullet = new Bullet(this.position,this._parent);
+        gameState.CreateElement(Bullet,stringify(userEvents.position));
         console.log("bbomom");
     }
 }
 
 export class Bullet extends Element {
-    constructor(p,father) {
-        super(p,father)
-        this._setTimeLife();
-    }
-    _setDomElement() {
-        this._element = document.createElement('img');
-        this._element.setAttribute("src", "img/bullet.png");
-        this._parent.appendChild(this._element);            
-    }
-    _setTimeLife() {
-       window.setInterval(this.moveMe.bind(this),100);
-        window.setTimeout(this.killMe.bind(this),2000);
-    }
-    
-    moveMe() {
+    constructor(p) {
+        super(p)
+        this.DrawingStyle = BulletStyle;
+    }  
+    action(userEvents, gameState) {
         this._position.x = this._position.x - 100;
-        this._updateElement();
-        //if (cMap.tryColisionMap(this._position)) {
-        //    Console.log("colision");
-        //}
-
+        return this;
     }
-   killMe() {
-    console.log("killing time")   
-    this._parent.removeChild(this._element);
-   }
+
+    killMe() {
+        console.log("killing time")   
+    
+    }
 
 }
  
